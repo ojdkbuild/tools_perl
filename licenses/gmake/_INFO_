@@ -1,0 +1,4 @@
+Package: make-4.0.GIT
+Homepage: http://www.gnu.org/software/make/
+Sources: http://git.savannah.gnu.org/cgit/make.git
+Comment: git commit 241787d8e4e0aa8b266ed4dd17b55c4def92981d

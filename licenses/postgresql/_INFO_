@@ -1,0 +1,4 @@
+Package: postgresql-9.4.1
+Sources: http://ftp.postgresql.org/pub/source/v9.4.1/postgresql-9.4.1.tar.gz
+Patch: postgresql-9.4.1.diff
+Homepage: http://www.postgresql.org/

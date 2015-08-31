@@ -1,0 +1,509 @@
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/configure.ac gdbm-1.11/configure.ac
+--- gdbm-1.11.original/configure.ac	2015-01-26 13:16:17.900972900 +0100
++++ gdbm-1.11/configure.ac	2015-01-26 13:16:16.634182000 +0100
+@@ -121,6 +121,13 @@
+ AM_CONDITIONAL([COMPAT_OPT], [test "$want_compat" = yes])
+ AM_CONDITIONAL([ENABLE_EXPORT], [test "$want_export" = yes])
+ 
++if test x$host_os = xmingw32
++then
++  AM_CONDITIONAL(WIN32, true)
++else
++  AM_CONDITIONAL(WIN32, false)
++fi
++
+ # Initialize the test suite.
+ AC_CONFIG_TESTDIR(tests)
+ AC_CONFIG_FILES([tests/Makefile tests/atlocal po/Makefile.in])
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/configure.ac.orig gdbm-1.11/configure.ac.orig
+--- gdbm-1.11.original/configure.ac.orig	2015-01-26 13:16:17.946047000 +0100
++++ gdbm-1.11/configure.ac.orig	2013-12-25 10:48:00.000000000 +0100
+@@ -0,0 +1,135 @@
++# This file is part of GDBM.                                   -*- autoconf -*-
++# Copyright (C) 2007, 2009, 2011, 2013 Free Software Foundation, Inc.
++#
++# GDBM is free software; you can redistribute it and/or modify
++# it under the terms of the GNU General Public License as published by
++# the Free Software Foundation; either version 2, or (at your option)
++# any later version.
++#
++# GDBM is distributed in the hope that it will be useful,
++# but WITHOUT ANY WARRANTY; without even the implied warranty of
++# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
++# GNU General Public License for more details.
++#
++# You should have received a copy of the GNU General Public License
++# along with GDBM. If not, see <http://www.gnu.org/licenses/>. */
++
++m4_define([_GDBM_VERSION_MAJOR], 1)
++m4_define([_GDBM_VERSION_MINOR], 11)
++dnl m4_define([_GDBM_VERSION_PATCH], 0)
++
++AC_INIT([gdbm],
++        _GDBM_VERSION_MAJOR._GDBM_VERSION_MINOR[]m4_ifdef([_GDBM_VERSION_PATCH],._GDBM_VERSION_PATCH),
++	[bug-gdbm@gnu.org],,
++	[http://www.gnu.org/software/gdbm])
++AC_PREREQ(2.69)
++AC_CONFIG_SRCDIR([src/gdbmdefs.h])
++AC_CONFIG_AUX_DIR([build-aux])
++AC_CONFIG_HEADERS([autoconf.h])
++AC_CONFIG_MACRO_DIR([m4])
++AM_INIT_AUTOMAKE([gnits 1.11 std-options silent-rules])
++
++# Enable silent rules by default:
++AM_SILENT_RULES([yes])
++
++AC_SUBST([GDBM_VERSION_MAJOR], _GDBM_VERSION_MAJOR)
++AC_SUBST([GDBM_VERSION_MINOR], _GDBM_VERSION_MINOR)
++AC_SUBST([GDBM_VERSION_PATCH], m4_ifdef([_GDBM_VERSION_PATCH],_GDBM_VERSION_PATCH,0))
++
++AC_ARG_ENABLE([memory-mapped-io],
++  AC_HELP_STRING(
++    [--enable-memory-mapped-io]
++    [Use mmap(2) for disk I/O. (Default is YES.)]),
++    [mapped_io=$enableval],
++    [mapped_io=yes])
++
++AC_ARG_ENABLE([libgdbm-compat],
++  AC_HELP_STRING(
++    [--enable-libgdbm-compat]
++    [Build and install libgdbm_compat. (Default is NO.)]),
++    [want_compat=$enableval],
++    [want_compat=no])
++
++AC_ARG_ENABLE([gdbm-export],
++  AC_HELP_STRING(
++    [--enable-gdbm-export],
++    [Build and install gdbmexport with specified gdbm 1.8 library. (Default is NO.)]),
++    [want_export=$enableval],
++    [want_export=no])
++
++AC_ARG_WITH([gdbm183-library],
++  AC_HELP_STRING(
++    [--with-gdbm183-library],
++    [Build gdbmexport with specified (static) library.]),
++    [GDBM183_LIBRARY=$withval],
++    [GDBM183_LIBRARY="-lgdbm"])
++
++AC_ARG_WITH([gdbm183-libdir],
++  AC_HELP_STRING(
++    [--with-gdbm183-libdir],
++    [Build gdbmexport with the gdbm library in the specified directory.]),
++    [GDBM183_LIBDIR=$withval],
++    [GDBM183_LIBDIR="/usr/local/lib"])
++
++AC_ARG_WITH([gdbm183-includedir],
++  AC_HELP_STRING(
++    [--with-gdbm183-includedir],
++    [Build gdbmexport with gdbm.h in the specified directory.]),
++    [GDBM183_INCLUDEDIR=$withval],
++    [GDBM183_INCLUDEDIR="/usr/local/include"])
++    
++dnl Check for programs
++AC_PROG_CC
++AC_PROG_CPP
++AC_PROG_INSTALL
++AC_PROG_LIBTOOL
++AC_SYS_LARGEFILE
++AC_PROG_YACC
++AC_PROG_LEX
++AC_C_CONST
++AC_TYPE_UNSIGNED_LONG_LONG_INT
++
++AC_SUBST(GDBM_COUNT_T)
++if test $ac_cv_type_unsigned_long_long_int = yes; then
++	GDBM_COUNT_T="unsigned long long int"
++else
++	GDBM_COUNT_T="unsigned long"
++fi
++
++dnl Internationalization macros.
++AM_GNU_GETTEXT([external], [need-ngettext])
++AM_GNU_GETTEXT_VERSION(0.18)
++
++AC_CHECK_HEADERS([sys/file.h sys/termios.h string.h locale.h getopt.h])
++
++AC_CHECK_LIB(dbm, main)
++AC_CHECK_LIB(ndbm, main)
++AC_CHECK_FUNCS([rename ftruncate flock lockf fsync setlocale getopt_long])
++
++if test x$mapped_io = xyes
++then
++  AC_FUNC_MMAP()
++  AC_CHECK_FUNCS([msync])
++fi
++AC_TYPE_OFF_T
++AC_CHECK_SIZEOF(off_t)
++AC_CHECK_MEMBERS([struct stat.st_blksize])
++
++AC_SUBST(GDBM183_LIBRARY)
++AC_SUBST(GDBM183_LIBDIR)
++AC_SUBST(GDBM183_INCLUDEDIR)
++AM_CONDITIONAL([COMPAT_OPT], [test "$want_compat" = yes])
++AM_CONDITIONAL([ENABLE_EXPORT], [test "$want_export" = yes])
++
++# Initialize the test suite.
++AC_CONFIG_TESTDIR(tests)
++AC_CONFIG_FILES([tests/Makefile tests/atlocal po/Makefile.in])
++AM_MISSING_PROG([AUTOM4TE], [autom4te])
++
++AC_CONFIG_FILES([Makefile
++                 src/Makefile
++		 src/gdbm.h
++		 doc/Makefile
++		 compat/Makefile
++		 export/Makefile])
++AC_OUTPUT
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/falloc.c gdbm-1.11/src/falloc.c
+--- gdbm-1.11.original/src/falloc.c	2015-01-26 13:16:19.841504600 +0100
++++ gdbm-1.11/src/falloc.c	2015-01-26 13:16:16.556019300 +0100
+@@ -255,7 +255,7 @@
+ 
+ 
+   /* Split the header block. */
+-  temp = (avail_block *) malloc (av_size);
++  temp = (avail_block *) calloc (1, av_size);
+   if (temp == NULL) _gdbm_fatal (dbf, _("malloc error"));
+   /* Set the size to be correct AFTER the pop_avail_block. */
+   temp->size = dbf->header->avail.size;
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/gdbm_load.c gdbm-1.11/src/gdbm_load.c
+--- gdbm-1.11.original/src/gdbm_load.c	2015-01-26 13:16:20.673631100 +0100
++++ gdbm-1.11/src/gdbm_load.c	2015-01-26 13:16:16.713361300 +0100
+@@ -18,16 +18,12 @@
+ # include "gdbm.h"
+ # include "gdbmapp.h"
+ # include "gdbmdefs.h"
+-# include <pwd.h>
+-# include <grp.h>
+ 
+ int replace = 0;
+ int meta_mask = 0;
+ int no_meta_option;
+ 
+ int mode;
+-uid_t owner_uid;
+-gid_t owner_gid;
+ 
+ char *parseopt_program_doc = "load a GDBM database from a file";
+ char *parseopt_program_args = "FILE [DB_FILE]";
+@@ -45,6 +41,7 @@
+ static int
+ set_meta_info (GDBM_FILE dbf)
+ {
++#if 0
+   if (meta_mask)
+     {
+       int fd = gdbm_fdesc (dbf);
+@@ -63,6 +60,7 @@
+ 	  return 1;
+ 	}
+     }
++#endif
+   return 0;
+ }
+ 
+@@ -139,6 +137,7 @@
+ 	}
+ 	break;
+ 
++#if 0
+       case 'u':
+ 	{
+ 	  size_t len;
+@@ -198,6 +197,7 @@
+ 	  meta_mask |= GDBM_META_MASK_OWNER;
+ 	}
+ 	break;
++#endif
+ 	  
+       case 'r':
+ 	replace = 1;
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/gdbmclose.c gdbm-1.11/src/gdbmclose.c
+--- gdbm-1.11.original/src/gdbmclose.c	2015-01-26 13:16:19.999785100 +0100
++++ gdbm-1.11/src/gdbmclose.c	2015-01-26 13:16:16.665474800 +0100
+@@ -31,9 +31,11 @@
+ {
+   int index;	/* For freeing the bucket cache. */
+ 
++#ifdef HAVE_FSYNC
+   /* Make sure the database is all on disk. */
+   if (dbf->read_write != GDBM_READER)
+     __fsync (dbf);
++#endif
+ 
+   /* Close the file and free all malloced memory. */
+ #if HAVE_MMAP
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/gdbmdump.c gdbm-1.11/src/gdbmdump.c
+--- gdbm-1.11.original/src/gdbmdump.c	2015-01-26 13:16:20.131050700 +0100
++++ gdbm-1.11/src/gdbmdump.c	2015-01-26 13:16:16.681162800 +0100
+@@ -17,8 +17,6 @@
+ # include "autoconf.h"
+ # include "gdbmdefs.h"
+ # include "gdbm.h"
+-# include <pwd.h>
+-# include <grp.h>
+ # include <time.h>
+ 
+ static int
+@@ -56,8 +54,6 @@
+   time_t t;
+   int fd;
+   struct stat st;
+-  struct passwd *pw;
+-  struct group *gr;
+   datum key;
+   size_t count = 0;
+   unsigned char *buffer = NULL;
+@@ -76,13 +72,7 @@
+ 
+   fprintf (fp, "#:file=%s\n", dbf->name);
+   fprintf (fp, "#:uid=%lu,", (unsigned long) st.st_uid);
+-  pw = getpwuid (st.st_uid);
+-  if (pw)
+-    fprintf (fp, "user=%s,", pw->pw_name);
+   fprintf (fp, "gid=%lu,", (unsigned long) st.st_gid);
+-  gr = getgrgid (st.st_gid);
+-  if (gr)
+-    fprintf (fp, "group=%s,", gr->gr_name);
+   fprintf (fp, "mode=%03o\n", st.st_mode & 0777);
+   fprintf (fp, "# End of header\n");
+   
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/gdbmexp.c gdbm-1.11/src/gdbmexp.c
+--- gdbm-1.11.original/src/gdbmexp.c	2015-01-26 13:16:20.203163800 +0100
++++ gdbm-1.11/src/gdbmexp.c	2015-01-26 13:16:16.681162800 +0100
+@@ -18,7 +18,7 @@
+ 
+ /* Include system configuration before all else. */
+ # include "autoconf.h"
+-# include <arpa/inet.h>
++# include <winsock2.h>
+ 
+ # include "gdbmdefs.h"
+ # include "gdbm.h"
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/gdbmimp.c gdbm-1.11/src/gdbmimp.c
+--- gdbm-1.11.original/src/gdbmimp.c	2015-01-26 13:16:20.318897200 +0100
++++ gdbm-1.11/src/gdbmimp.c	2015-01-26 13:16:16.696700300 +0100
+@@ -17,7 +17,7 @@
+    along with GDBM. If not, see <http://www.gnu.org/licenses/>.   */
+ 
+ # include "autoconf.h"
+-# include <arpa/inet.h>
++# include <winsock2.h>
+ 
+ # include "gdbmdefs.h"
+ # include "gdbm.h"
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/gdbmload.c gdbm-1.11/src/gdbmload.c
+--- gdbm-1.11.original/src/gdbmload.c	2015-01-26 13:16:20.415214500 +0100
++++ gdbm-1.11/src/gdbmload.c	2015-01-26 13:16:16.696700300 +0100
+@@ -18,8 +18,6 @@
+ # include "gdbmdefs.h"
+ # include "gdbm.h"
+ # include <sys/types.h>
+-# include <pwd.h>
+-# include <grp.h>
+ 
+ struct datbuf
+ {
+@@ -288,14 +286,13 @@
+ _set_gdbm_meta_info (GDBM_FILE dbf, char *param, int meta_mask)
+ {
+   unsigned long n;
+-  uid_t owner_uid;
+-  uid_t owner_gid;
+   mode_t mode;
+   int meta_flags = 0;
+   const char *p;
+   char *end;
+   int rc = 0;
+ 
++#if 0
+   if (!(meta_mask & GDBM_META_MASK_OWNER))
+     {
+       p = getparm (param, "user");
+@@ -341,6 +338,7 @@
+ 	    }
+ 	}
+     }
++#endif
+   
+   if (!(meta_mask & GDBM_META_MASK_MODE))
+     {
+@@ -357,6 +355,7 @@
+ 	}
+     }
+   
++#if 0 
+   if (meta_flags)
+     {
+       int fd = gdbm_fdesc (dbf);
+@@ -383,6 +382,7 @@
+ 	  rc = 1;
+ 	}
+     }
++#endif
+   return rc;
+ }
+ 
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/gdbmopen.c gdbm-1.11/src/gdbmopen.c
+--- gdbm-1.11.original/src/gdbmopen.c	2015-01-26 13:16:20.439217000 +0100
++++ gdbm-1.11/src/gdbmopen.c	2015-01-26 13:16:16.665474800 +0100
+@@ -264,7 +264,7 @@
+ 	(dbf->header->block_size - sizeof (hash_bucket))
+ 	/ sizeof (bucket_element) + 1;
+       dbf->header->bucket_size  = dbf->header->block_size;
+-      dbf->bucket = (hash_bucket *) malloc (dbf->header->bucket_size);
++      dbf->bucket = (hash_bucket *) calloc (1, dbf->header->bucket_size);
+       if (dbf->bucket == NULL)
+ 	{
+ 	  gdbm_close (dbf);
+@@ -316,8 +316,10 @@
+ 	  return NULL;
+ 	}
+ 
++#ifdef HAVE_FSYNC
+       /* Wait for initial configuration to be written to disk. */
+       __fsync (dbf);
++#endif
+ 
+       free (dbf->bucket);
+     }
+@@ -456,7 +458,7 @@
+       for(index = 0; index < size; index++)
+         {
+           (dbf->bucket_cache[index]).ca_bucket
+-            = (hash_bucket *) malloc (dbf->header->bucket_size);
++            = (hash_bucket *) calloc (1, dbf->header->bucket_size);
+           if ((dbf->bucket_cache[index]).ca_bucket == NULL)
+ 	    {
+               gdbm_errno = GDBM_MALLOC_ERROR;
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/gdbmreorg.c gdbm-1.11/src/gdbmreorg.c
+--- gdbm-1.11.original/src/gdbmreorg.c	2015-01-26 13:16:20.467972300 +0100
++++ gdbm-1.11/src/gdbmreorg.c	2015-01-26 13:16:16.665474800 +0100
+@@ -207,8 +207,10 @@
+   free (new_dbf);
+   free (new_name);
+ 
++#ifdef HAVE_FSYNC
+   /* Make sure the new database is all on disk. */
+   __fsync (dbf);
++#endif
+ 
+   /* Force the right stuff for a correct bucket cache. */
+   dbf->cache_entry    = &dbf->bucket_cache[0];
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/gdbmsync.c gdbm-1.11/src/gdbmsync.c
+--- gdbm-1.11.original/src/gdbmsync.c	2015-01-26 13:16:20.575979000 +0100
++++ gdbm-1.11/src/gdbmsync.c	2015-01-26 13:16:16.649853300 +0100
+@@ -31,7 +31,8 @@
+   /* Initialize the gdbm_errno variable. */
+   gdbm_errno = GDBM_NO_ERROR;
+ 
++#ifdef HAVE_FSYNC
+   /* Do the sync on the file. */
+   __fsync (dbf);
+-
++#endif
+ }
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/gdbmtool.c gdbm-1.11/src/gdbmtool.c
+--- gdbm-1.11.original/src/gdbmtool.c	2015-01-26 13:16:20.598325700 +0100
++++ gdbm-1.11/src/gdbmtool.c	2015-01-26 13:16:16.713361300 +0100
+@@ -22,8 +22,6 @@
+ #include <errno.h>
+ #include <ctype.h>
+ #include <signal.h>
+-#include <pwd.h>
+-#include <sys/ioctl.h>
+ #ifdef HAVE_SYS_TERMIOS_H
+ # include <sys/termios.h>
+ #endif
+@@ -1497,6 +1495,7 @@
+       if (setsource (GDBMTOOLRC, 0) == 0)
+ 	yyparse ();
+     }
++#if 0
+   else
+     {
+       char *fname;
+@@ -1519,6 +1518,7 @@
+ 	}
+       free (fname);
+     }
++#endif
+ }
+ 
+ int
+@@ -1620,8 +1620,6 @@
+   if (argc == 1)
+     file_name = argv[0];
+ 
+-  signal (SIGPIPE, SIG_IGN);
+-
+   memset (&param, 0, sizeof (param));
+   argmax = 0;
+ 
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/Makefile.am gdbm-1.11/src/Makefile.am
+--- gdbm-1.11.original/src/Makefile.am	2015-01-26 13:16:21.026066400 +0100
++++ gdbm-1.11/src/Makefile.am	2015-01-26 13:16:16.634182000 +0100
+@@ -65,7 +65,10 @@
+  update.c\
+  version.c
+ 
+-libgdbm_la_LDFLAGS = -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE)
++libgdbm_la_LDFLAGS = -version-info $(VI_CURRENT):$(VI_REVISION):$(VI_AGE) -no-undefined
++if WIN32
++libgdbm_la_LDFLAGS += -lws2_32
++endif
+ 
+ noinst_LIBRARIES = libgdbmapp.a
+ 
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/update.c gdbm-1.11/src/update.c
+--- gdbm-1.11.original/src/update.c	2015-01-26 13:16:21.276440700 +0100
++++ gdbm-1.11/src/update.c	2015-01-26 13:16:16.649853300 +0100
+@@ -39,8 +39,10 @@
+     _gdbm_fatal (dbf, gdbm_strerror (rc));
+ 
+   /* Sync the file if fast_write is FALSE. */
++#ifdef HAVE_FSYNC
+   if (dbf->fast_write == FALSE)
+     __fsync (dbf);
++#endif
+ }
+ 
+ 
+@@ -84,8 +86,10 @@
+       if (rc)
+ 	_gdbm_fatal (dbf, gdbm_strerror (rc));
+       dbf->directory_changed = FALSE;
++#ifdef HAVE_FSYNC
+       if (!dbf->header_changed && dbf->fast_write == FALSE)
+ 	__fsync (dbf);
++#endif
+     }
+ 
+   /* Final write of the header. */
+diff -r -u -w --strip-trailing-cr gdbm-1.11.original/src/util.c gdbm-1.11/src/util.c
+--- gdbm-1.11.original/src/util.c	2015-01-26 13:16:21.301499700 +0100
++++ gdbm-1.11/src/util.c	2015-01-26 13:16:16.713361300 +0100
+@@ -16,7 +16,6 @@
+    along with GDBM. If not, see <http://www.gnu.org/licenses/>.    */
+ 
+ #include "gdbmtool.h"
+-#include <pwd.h>
+ 
+ char *
+ mkfilename (const char *dir, const char *file, const char *suf)
+@@ -45,6 +44,7 @@
+ char *
+ tildexpand (char *s)
+ {
++#if 0
+   if (s[0] == '~')
+     {
+       char *p = s + 1;
+@@ -65,6 +65,7 @@
+       if (pw)
+ 	return mkfilename (pw->pw_dir, p + len + 1, NULL);
+     }
++#endif
+   return estrdup (s);
+ }
+ 

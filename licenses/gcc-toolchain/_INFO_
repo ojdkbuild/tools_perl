@@ -1,0 +1,35 @@
+Package: gcc-4.8.3
+Homepage: http://gcc.gnu.org/
+Sources: ftp://gcc.gnu.org/pub/gcc/releases/
+
+Package: binutils-2.24
+Homepage: http://www.gnu.org/software/binutils/
+Sources: http://ftp.gnu.org/gnu/binutils/
+
+Package: mingw-w64-crt-v3
+Homepage: http://mingw-w64.sourceforge.net/
+Sources: http://sourceforge.net/projects/mingw-w64/files/mingw-w64/mingw-w64-release/
+
+name: gcc-4.8.3
+url : ftp://ftp.fu-berlin.de/unix/languages/gcc/releases/gcc-4.8.3/gcc-4.8.3.tar.bz2
+    
+name: binutils-2.24
+url : ftp://mirrors.kernel.org/sources.redhat.com/binutils/releases/binutils-2.24.tar.bz2
+    
+name: mingw-w64-crt-v3 / git commit:32432d11bce71bd3831e6f828073c937bf00178c
+url : git://git.code.sf.net/p/mingw-w64/mingw-w64
+    
+name: winpthreads-v3 / git commit:32432d11bce71bd3831e6f828073c937bf00178c
+url : git://git.code.sf.net/p/mingw-w64/mingw-w64
+    
+name: gendef-v3 / git commit:32432d11bce71bd3831e6f828073c937bf00178c
+url : git://git.code.sf.net/p/mingw-w64/mingw-w64
+    
+name: genidl-v3 / git commit:32432d11bce71bd3831e6f828073c937bf00178c
+url : git://git.code.sf.net/p/mingw-w64/mingw-w64
+    
+name: genpeimg-v3 / git commit:32432d11bce71bd3831e6f828073c937bf00178c
+url : git://git.code.sf.net/p/mingw-w64/mingw-w64
+    
+name: widl-v3 / git commit:32432d11bce71bd3831e6f828073c937bf00178c
+url : git://git.code.sf.net/p/mingw-w64/mingw-w64

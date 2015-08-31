@@ -1,0 +1,17 @@
+diff -r -u -w --strip-trailing-cr freetype-2.5.5.original/freetype-config.bat.win-gcc freetype-2.5.5/freetype-config.bat.win-gcc
+--- freetype-2.5.5.original/freetype-config.bat.win-gcc	2015-01-26 13:30:29.008713900 +0100
++++ freetype-2.5.5/freetype-config.bat.win-gcc	2015-01-26 13:30:24.165466800 +0100
+@@ -0,0 +1,12 @@
++@echo off
++rem simplified replacement for the original shell script
++
++for %%p in (%*) do (
++  if x%%p == x--version  echo 2.5.5&                         goto END
++  if x%%p == x--cflags   echo -I"%~dp0..\include\freetype2"& goto END
++  if x%%p == x--libs     echo -L"%~dp0..\lib" -lfreetype&    goto END
++)
++
++echo Usage: %~n0 --version or --cflags or --libs
++
++:END
+\ No newline at end of file
